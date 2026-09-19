@@ -1,0 +1,34 @@
+# Small GPT-style decoder-only transformer, char tokenizer, for architecture
+# comparison against lstm.yaml and gru.yaml.
+#
+# Shares data split, seed, batch size, block size and training-token budget
+# with lstm.yaml, gru.yaml and transformer_bpe.yaml: steps * batch_size *
+# block_size = 2048 * 64 * 256 ~= 33.6M tokens, targeting ~10-15 minutes on
+# a 16-thread CPU assuming 30-60k tokens/sec.
+name: transformer
+data:
+  dir: data/processed
+tokenizer:
+  type: char
+model:
+  kind: transformer
+  n_layer: 4
+  n_head: 4
+  d_model: 256
+  block_size: 256
+  dropout: 0.1
+train:
+  steps: 2048
+  batch_size: 64
+  block_size: 256
+  lr: 0.0003
+  weight_decay: 0.01
+  warmup_steps: 100
+  grad_clip: 1.0
+  eval_interval: 256
+  eval_batches: 20
+  artist_dropout: 0.1
+  seed: 1337
+  device: cpu
+  num_threads: 16
+out_dir: runs/transformer

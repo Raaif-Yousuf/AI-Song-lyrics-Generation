@@ -1,0 +1,11 @@
+# Core runtime dependencies, pinned to match the project's reference environment.
+#
+# torch is CPU-only for this project. A plain `pip install -r requirements.txt` may
+# resolve a CUDA build on platforms where one is published; to guarantee a CPU-only
+# wheel on any OS, install it explicitly from the PyTorch CPU index first:
+#   pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements.txt
+torch==2.14.0
+numpy==2.5.3
+PyYAML==6.0.3
+tokenizers==0.23.2

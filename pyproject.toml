@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lyricgen"
+version = "0.2.0"
+description = "Artist-conditioned lyric generation: data pipeline, model comparison, sampling, and evaluation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "torch>=2.14,<3",
+    "numpy>=2.5,<3",
+    "PyYAML>=6.0,<7",
+    "tokenizers>=0.23,<0.24",
+]
+
+[project.optional-dependencies]
+demo = [
+    "gradio>=6.28,<7",
+]
+
+[project.scripts]
+lyricgen = "lyricgen.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+# The original Keras script is kept until the new CLI replaces it.
+extend-exclude = ["main.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

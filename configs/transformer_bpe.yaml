@@ -1,0 +1,35 @@
+# Same transformer architecture as transformer.yaml but with a byte-level BPE
+# tokenizer (~2000 merges) instead of the char tokenizer, to compare
+# tokenization strategy independent of architecture.
+#
+# Shares data split, seed, batch size, block size and training-token budget
+# with lstm.yaml, gru.yaml and transformer.yaml; see lstm.yaml for the
+# token-budget rationale.
+name: transformer_bpe
+data:
+  dir: data/processed
+tokenizer:
+  type: bpe
+  vocab_size: 2000
+model:
+  kind: transformer
+  n_layer: 4
+  n_head: 4
+  d_model: 256
+  block_size: 256
+  dropout: 0.1
+train:
+  steps: 2048
+  batch_size: 64
+  block_size: 256
+  lr: 0.0003
+  weight_decay: 0.01
+  warmup_steps: 100
+  grad_clip: 1.0
+  eval_interval: 256
+  eval_batches: 20
+  artist_dropout: 0.1
+  seed: 1337
+  device: cpu
+  num_threads: 16
+out_dir: runs/transformer_bpe
