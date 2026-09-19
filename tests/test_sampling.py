@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 import torch
 
 from lyricgen.models import build_model
@@ -142,6 +143,49 @@ def test_transformer_generate_works_past_block_size() -> None:
 
     assert len(out) == max_new_tokens
     assert all(0 <= tok < 8 for tok in out)
+
+
+@pytest.mark.parametrize(
+    ("temperature", "top_k", "top_p", "repetition_penalty"),
+    [
+        (0.0, 0, 1.0, 1.0),
+        (0.9, 5, 1.0, 1.0),
+        (0.8, 0, 0.9, 1.3),
+    ],
+)
+def test_transformer_generate_cached_matches_uncached(
+    temperature: float, top_k: int, top_p: float, repetition_penalty: float
+) -> None:
+    torch.manual_seed(0)
+    model = _tiny_transformer(block_size=12)
+    prompt = [1, 2, 3, 4]  # shorter than block_size for the whole run
+
+    cached = generate(
+        model,
+        prompt,
+        artist_id=1,
+        max_new_tokens=6,
+        temperature=temperature,
+        top_k=top_k,
+        top_p=top_p,
+        repetition_penalty=repetition_penalty,
+        seed=123,
+        use_cache=True,
+    )
+    uncached = generate(
+        model,
+        prompt,
+        artist_id=1,
+        max_new_tokens=6,
+        temperature=temperature,
+        top_k=top_k,
+        top_p=top_p,
+        repetition_penalty=repetition_penalty,
+        seed=123,
+        use_cache=False,
+    )
+
+    assert cached == uncached
 
 
 def test_generate_restores_training_mode() -> None:
