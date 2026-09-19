@@ -121,8 +121,10 @@ def test_seeded_generate_is_reproducible() -> None:
     model = _tiny_lstm()
     prompt = [1, 2, 3]
 
-    out1 = generate(model, prompt, artist_id=1, max_new_tokens=15, temperature=0.9, top_k=4, seed=42)
-    out2 = generate(model, prompt, artist_id=1, max_new_tokens=15, temperature=0.9, top_k=4, seed=42)
+    out1 = generate(model, prompt, artist_id=1, max_new_tokens=15, temperature=0.9,
+                    top_k=4, seed=42)
+    out2 = generate(model, prompt, artist_id=1, max_new_tokens=15, temperature=0.9,
+                    top_k=4, seed=42)
 
     assert out1 == out2
 
@@ -134,7 +136,9 @@ def test_transformer_generate_works_past_block_size() -> None:
     prompt = [0, 1, 2]
     max_new_tokens = 25  # prompt + generated exceeds block_size
 
-    out = generate(model, prompt, artist_id=0, max_new_tokens=max_new_tokens, temperature=0.8, seed=1)
+    out = generate(
+        model, prompt, artist_id=0, max_new_tokens=max_new_tokens, temperature=0.8, seed=1
+    )
 
     assert len(out) == max_new_tokens
     assert all(0 <= tok < 8 for tok in out)
