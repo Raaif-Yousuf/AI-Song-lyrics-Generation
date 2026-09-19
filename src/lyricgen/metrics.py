@@ -85,6 +85,51 @@ def ngram_novelty_by_n(
     return {n: ngram_novelty(texts, ngram_set(reference_texts, n), n) for n in ns}
 
 
+def distinct_n(texts: Iterable[str], n: int) -> float:
+    """Self-diversity: unique word n-grams divided by total word n-grams.
+
+    Unlike `ngram_novelty`, this has no external reference: it measures how
+    repetitive `texts` are internally (low distinct-n means the same
+    n-grams recur often, e.g. a model stuck in a loop). Returns 0.0 when
+    `texts` has no n-grams of length `n`.
+    """
+    if n <= 0:
+        raise ValueError("n must be a positive integer")
+    total = 0
+    seen: set[int] = set()
+    for text in texts:
+        words = word_tokens(text)
+        for i in range(len(words) - n + 1):
+            total += 1
+            seen.add(hash(tuple(words[i : i + n])))
+    return len(seen) / total if total else 0.0
+
+
+def repeated_line_rate(texts: Iterable[str]) -> float:
+    """Fraction of non-empty lines that exactly repeat an earlier line in
+    the same sample.
+
+    Each string in `texts` is checked independently (a line repeating a
+    line from a *different* sample does not count); lines are compared
+    after stripping surrounding whitespace. Returns 0.0 when there are no
+    non-empty lines at all.
+    """
+    total_lines = 0
+    repeated = 0
+    for text in texts:
+        seen: set[str] = set()
+        for line in text.splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+            total_lines += 1
+            if stripped in seen:
+                repeated += 1
+            else:
+                seen.add(stripped)
+    return repeated / total_lines if total_lines else 0.0
+
+
 def _word_hash_prefix(words: Sequence[str]) -> list[int]:
     """Prefix polynomial hash of `words`; `prefix[i]` hashes `words[:i]`."""
     prefix = [0] * (len(words) + 1)

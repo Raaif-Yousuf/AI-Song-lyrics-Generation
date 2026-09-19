@@ -22,7 +22,9 @@ HEADERS = (
     "val bpc",
     "test bpc",
     "test char ppl",
+    "bpc (artist/any)",
     "6-gram novelty (samples/held-out)",
+    "distinct-2 (samples)",
     "gen chars/s",
 )
 
@@ -72,6 +74,15 @@ def _fmt(value: Any, digits: int = 3) -> str:
     return str(value)
 
 
+def _tokenizer_label(value: Any) -> str:
+    """Human-readable tokenizer label from either a string or a to_dict()."""
+    if isinstance(value, dict):
+        kind = value.get("type", "-")
+        vocab_size = value.get("vocab_size")
+        return f"{kind}({vocab_size})" if vocab_size else str(kind)
+    return str(value) if value is not None else "-"
+
+
 def _novelty_pair(eval_data: dict[str, Any], n: int = 6) -> str:
     novelty = eval_data.get("novelty") or {}
     heldout = eval_data.get("novelty_heldout") or {}
@@ -80,6 +91,21 @@ def _novelty_pair(eval_data: dict[str, Any], n: int = 6) -> str:
     if sample_value is None or heldout_value is None:
         return "-"
     return f"{sample_value:.3f} / {heldout_value:.3f}"
+
+
+def _conditioning_pair(eval_data: dict[str, Any]) -> str:
+    conditioning = eval_data.get("conditioning") or {}
+    true_bpc = conditioning.get("true_bpc")
+    any_bpc = conditioning.get("any_bpc")
+    if true_bpc is None or any_bpc is None:
+        return "-"
+    return f"{true_bpc:.3f} / {any_bpc:.3f}"
+
+
+def _distinct_2_samples(eval_data: dict[str, Any]) -> str:
+    distinct_2 = eval_data.get("distinct_2") or {}
+    value = distinct_2.get("samples")
+    return "-" if value is None else f"{value:.3f}"
 
 
 def render_table(rows: list[dict[str, Any]]) -> str:
@@ -92,14 +118,16 @@ def render_table(rows: list[dict[str, Any]]) -> str:
         eval_data = row["eval"]
         cells = (
             str(metrics.get("name", row["name"])),
-            str(metrics.get("tokenizer", "-")),
+            _tokenizer_label(metrics.get("tokenizer")),
             _fmt(metrics.get("params"), 0),
             _fmt(metrics.get("train_tokens_per_sec"), 0),
             _fmt(metrics.get("train_time_s"), 1),
             _fmt(metrics.get("val_bpc")),
             _fmt(eval_data.get("test_bpc")),
             _fmt(eval_data.get("test_char_ppl"), 2),
+            _conditioning_pair(eval_data),
             _novelty_pair(eval_data),
+            _distinct_2_samples(eval_data),
             _fmt(eval_data.get("gen_chars_per_sec"), 1),
         )
         lines.append("| " + " | ".join(cells) + " |")
