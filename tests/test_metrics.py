@@ -7,10 +7,12 @@ import pytest
 from lyricgen.metrics import (
     bits_per_char,
     char_perplexity,
+    distinct_n,
     longest_copied_run,
     ngram_novelty,
     ngram_novelty_by_n,
     ngram_set,
+    repeated_line_rate,
     word_tokens,
 )
 
@@ -136,3 +138,59 @@ def test_longest_copied_run_match_at_end() -> None:
     reference = ["completely unrelated preamble then the exact ending phrase"]
     generated = "some other words then the exact ending phrase"
     assert longest_copied_run(generated, reference) == 5
+
+
+def test_distinct_n_rejects_non_positive_n() -> None:
+    with pytest.raises(ValueError):
+        distinct_n(["a b c"], 0)
+
+
+def test_distinct_n_all_unique_is_one() -> None:
+    # bigrams: (a,b), (b,c), (c,d) -- three distinct out of three total.
+    assert distinct_n(["a b c d"], 2) == pytest.approx(1.0)
+
+
+def test_distinct_n_repetition_lowers_score() -> None:
+    # bigrams: (a,b), (b,a), (a,b) -- two distinct out of three total.
+    assert distinct_n(["a b a b"], 2) == pytest.approx(2 / 3)
+
+
+def test_distinct_n_counts_across_all_texts() -> None:
+    # (a,b) appears twice total (once per text), one distinct bigram.
+    assert distinct_n(["a b", "a b"], 2) == pytest.approx(0.5)
+
+
+def test_distinct_n_empty_texts_is_zero() -> None:
+    assert distinct_n([""], 3) == 0.0
+    assert distinct_n([], 3) == 0.0
+
+
+def test_repeated_line_rate_no_repeats_is_zero() -> None:
+    assert repeated_line_rate(["line one\nline two\nline three"]) == 0.0
+
+
+def test_repeated_line_rate_counts_within_sample_repeats() -> None:
+    # 4 non-empty lines, 1 repeat ("chorus" appears a second time).
+    text = "verse one\nchorus\nverse two\nchorus"
+    assert repeated_line_rate([text]) == pytest.approx(0.25)
+
+
+def test_repeated_line_rate_ignores_repeats_across_different_samples() -> None:
+    # Each sample individually has no internal repeat, even though both
+    # samples share the same line.
+    assert repeated_line_rate(["chorus\nverse", "chorus\nbridge"]) == 0.0
+
+
+def test_repeated_line_rate_ignores_blank_lines() -> None:
+    text = "chorus\n\n\nchorus"
+    assert repeated_line_rate([text]) == pytest.approx(0.5)
+
+
+def test_repeated_line_rate_strips_whitespace_before_comparing() -> None:
+    text = "chorus\n  chorus  "
+    assert repeated_line_rate([text]) == pytest.approx(0.5)
+
+
+def test_repeated_line_rate_empty_input_is_zero() -> None:
+    assert repeated_line_rate([]) == 0.0
+    assert repeated_line_rate([""]) == 0.0
