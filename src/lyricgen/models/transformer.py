@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 import torch
@@ -155,6 +156,27 @@ class TransformerLyricsModel(LyricsModel):
         self.ln_f = nn.LayerNorm(d_model)
         self.head = nn.Linear(d_model, vocab_size, bias=False)
         self.head.weight = self.token_embed.weight
+        self._init_weights(n_layer)
+
+    def _init_weights(self, n_layer: int) -> None:
+        """GPT-2 style init: small normal weights, zero biases.
+
+        PyTorch's default N(0, 1) embedding init combined with the tied output
+        head makes the initial logits scale with d_model, so the first loss is
+        far above ln(vocab_size). Residual output projections are further
+        scaled by 1/sqrt(2 * n_layer) so the residual stream stays well sized.
+        """
+        for module in self.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.normal_(module.weight, mean=0.0, std=0.02)
+                if module.bias is not None:
+                    nn.init.zeros_(module.bias)
+            elif isinstance(module, nn.Embedding):
+                nn.init.normal_(module.weight, mean=0.0, std=0.02)
+        residual_std = 0.02 / math.sqrt(2 * n_layer)
+        for block in self.blocks:
+            nn.init.normal_(block.attn.proj.weight, mean=0.0, std=residual_std)
+            nn.init.normal_(block.mlp.fc2.weight, mean=0.0, std=residual_std)
 
     def forward(
         self,

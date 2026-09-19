@@ -95,6 +95,8 @@ def train(config: ExperimentConfig) -> dict[str, Any]:
     torch.manual_seed(seed)
     if config.train.num_threads:
         torch.set_num_threads(config.train.num_threads)
+    # Denormal floats are very slow on x86 CPUs and carry no useful signal here.
+    torch.set_flush_denormal(True)
     device = torch.device(config.train.device)
 
     out_dir = Path(config.out_dir)
