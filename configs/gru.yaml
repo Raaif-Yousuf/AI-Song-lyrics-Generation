@@ -1,0 +1,27 @@
+# Same shape as lstm.yaml but with GRU cells, for architecture comparison.
+#
+# Shares data split, seed, batch size, block size and training-token budget
+# with lstm.yaml, transformer.yaml and transformer_bpe.yaml; see lstm.yaml
+# for the token-budget rationale.
+name: gru
+data:
+  dir: data/processed
+tokenizer:
+  type: char
+model:
+  kind: gru
+train:
+  steps: 2048
+  batch_size: 64
+  block_size: 256
+  lr: 0.0003
+  weight_decay: 0.01
+  warmup_steps: 100
+  grad_clip: 1.0
+  eval_interval: 256
+  eval_batches: 20
+  artist_dropout: 0.1
+  seed: 1337
+  device: cpu
+  num_threads: 16
+out_dir: runs/gru

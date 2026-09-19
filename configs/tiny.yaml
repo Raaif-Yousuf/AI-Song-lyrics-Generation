@@ -1,0 +1,30 @@
+# Smoke-test config: trains in seconds on CPU. Used to sanity-check the full
+# pipeline (data loading, model build, training loop, checkpointing) runs
+# end to end, not to produce a usable model.
+name: tiny
+data:
+  dir: data/processed
+tokenizer:
+  type: char
+model:
+  kind: transformer
+  n_layer: 1
+  n_head: 1
+  d_model: 32
+  block_size: 32
+  dropout: 0.0
+train:
+  steps: 20
+  batch_size: 4
+  block_size: 32
+  lr: 0.003
+  weight_decay: 0.0
+  warmup_steps: 0
+  grad_clip: 1.0
+  eval_interval: 10
+  eval_batches: 2
+  artist_dropout: 0.0
+  seed: 1337
+  device: cpu
+  num_threads: 1
+out_dir: runs/tiny
