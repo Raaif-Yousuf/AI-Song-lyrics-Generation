@@ -156,7 +156,11 @@ def test_evaluate_returns_expected_fields_and_ranges(tmp_path: Path) -> None:
         "gen_chars_per_sec",
         "novelty",
         "novelty_heldout",
+        "distinct_2",
+        "distinct_3",
+        "repeated_line_rate",
         "longest_copied_run",
+        "conditioning",
         "sampling",
         "n_samples",
         "seed",
@@ -181,6 +185,18 @@ def test_evaluate_returns_expected_fields_and_ranges(tmp_path: Path) -> None:
     for group in ("samples", "heldout"):
         assert lcr[group]["mean"] >= 0.0
         assert lcr[group]["max"] >= lcr[group]["mean"]
+
+    for metric in (result["distinct_2"], result["distinct_3"], result["repeated_line_rate"]):
+        assert set(metric) == {"samples", "heldout"}
+        for value in metric.values():
+            assert 0.0 <= value <= 1.0
+
+    conditioning = result["conditioning"]
+    assert set(conditioning) == {"true_bpc", "any_bpc", "wrong_bpc", "per_artist"}
+    assert conditioning["true_bpc"] == pytest.approx(result["test_bpc"])
+    assert set(conditioning["per_artist"]) == {"aa", "bb"}
+    for gap in conditioning["per_artist"].values():
+        assert set(gap) == {"true", "any"}
 
     assert result["sampling"] == {
         "temperature": 0.8,
@@ -207,6 +223,7 @@ def test_evaluate_is_deterministic_given_seed(tmp_path: Path) -> None:
     assert result1["novelty_heldout"] == result2["novelty_heldout"]
     assert result1["longest_copied_run"] == result2["longest_copied_run"]
     assert result1["test_bpc"] == pytest.approx(result2["test_bpc"])
+    assert result1["conditioning"] == result2["conditioning"]
 
 
 def test_evaluate_copied_text_scores_low_novelty_and_high_copied_run(tmp_path: Path) -> None:
@@ -235,3 +252,59 @@ def test_evaluate_unknown_split_raises(tmp_path: Path) -> None:
     loaded, data_dir = _build_loaded(tmp_path)
     with pytest.raises(FileNotFoundError):
         evaluate(loaded, data_dir=data_dir, split="does-not-exist")
+
+
+def test_evaluate_skip_conditioning_sets_none(tmp_path: Path) -> None:
+    loaded, data_dir = _build_loaded(tmp_path)
+
+    result = evaluate(
+        loaded,
+        data_dir=data_dir,
+        split="test",
+        n_samples=2,
+        sample_chars=20,
+        seed=1,
+        skip_conditioning=True,
+    )
+
+    assert result["conditioning"] is None
+
+
+def test_evaluate_repeated_line_stub_scores_high_repeated_line_rate(tmp_path: Path) -> None:
+    line = "same line every time"
+
+    class _RepeatingLoadedModel(_StubLoadedModel):
+        def generate_text(self, prompt="", artist=None, length=400, **kw):
+            text = (line + "\n") * 10
+            return text[:length]
+
+    loaded, data_dir = _build_loaded(tmp_path, cls=_RepeatingLoadedModel)
+    # 5 clean repeats of "line\n" (21 chars each): 4 of them repeat the first.
+    sample_chars = (len(line) + 1) * 5
+
+    result = evaluate(
+        loaded, data_dir=data_dir, split="test", n_samples=2, sample_chars=sample_chars, seed=1
+    )
+
+    assert result["repeated_line_rate"]["samples"] == pytest.approx(4 / 5)
+    assert result["distinct_2"]["samples"] < 0.5
+
+
+def test_seeded_derangement_has_no_fixed_points_and_is_deterministic() -> None:
+    from lyricgen.evaluate import _seeded_derangement
+
+    items = [0, 1, 2, 3, 4]
+    mapping1 = _seeded_derangement(items, seed=42)
+    mapping2 = _seeded_derangement(items, seed=42)
+
+    assert mapping1 == mapping2
+    assert set(mapping1.values()) == set(items)
+    for item in items:
+        assert mapping1[item] != item
+
+
+def test_seeded_derangement_single_item_maps_to_itself() -> None:
+    from lyricgen.evaluate import _seeded_derangement
+
+    assert _seeded_derangement([7], seed=0) == {7: 7}
+    assert _seeded_derangement([], seed=0) == {}
