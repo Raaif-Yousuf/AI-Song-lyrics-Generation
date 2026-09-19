@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 import torch
 
@@ -228,3 +230,17 @@ def test_tiny_model_overfits_and_greedy_generate_reproduces_it(kind: str) -> Non
         seed=0,
     )
     assert generated == expected_continuation
+
+
+def test_transformer_initial_loss_is_near_uniform() -> None:
+    torch.manual_seed(0)
+    vocab_size = 120
+    model = build_model(
+        {"kind": "transformer", "vocab_size": vocab_size, "n_artists": 5, "d_model": 64,
+         "n_layer": 2, "n_head": 2, "block_size": 32}
+    )
+    tokens = torch.randint(0, vocab_size, (4, 33))
+    logits, _ = model(tokens[:, :-1], torch.zeros(4, dtype=torch.long))
+    targets = tokens[:, 1:].reshape(-1)
+    loss = torch.nn.functional.cross_entropy(logits.reshape(-1, vocab_size), targets)
+    assert abs(loss.item() - math.log(vocab_size)) < 0.5
