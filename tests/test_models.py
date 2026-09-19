@@ -121,6 +121,36 @@ def test_transformer_causality() -> None:
     assert not torch.allclose(base_logits[:, -1, :], changed_logits[:, -1, :])
 
 
+def test_transformer_kv_cache_matches_full_forward() -> None:
+    model = build_model(_small_config("transformer"))
+    model.eval()
+    torch.manual_seed(0)
+    tokens = torch.randint(0, 13, (1, 9))
+    artists = torch.tensor([2])
+
+    with torch.no_grad():
+        full_logits, _ = model(tokens, artists)
+
+        # Incrementally encode a chunk, then one token at a time.
+        cached_logits, state = model(tokens[:, :4], artists, state=None, use_cache=True)
+        for i in range(4, tokens.shape[1]):
+            step_logits, state = model(tokens[:, i : i + 1], artists, state=state, use_cache=True)
+            cached_logits = torch.cat([cached_logits, step_logits], dim=1)
+
+    assert state.length == tokens.shape[1]
+    assert torch.allclose(full_logits, cached_logits, atol=1e-5)
+
+
+def test_transformer_forward_without_use_cache_returns_none_state() -> None:
+    model = build_model(_small_config("transformer"))
+    tokens = torch.randint(0, 13, (1, 5))
+    artists = torch.zeros(1, dtype=torch.long)
+
+    logits, state = model(tokens, artists, state=None)
+    assert state is None
+    assert logits.shape == (1, 5, 13)
+
+
 @pytest.mark.parametrize("kind", ["lstm", "gru"])
 def test_rnn_streaming_equivalence(kind: str) -> None:
     model = build_model(_small_config(kind))

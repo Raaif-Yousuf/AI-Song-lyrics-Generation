@@ -99,15 +99,27 @@ def generate(
     repetition_penalty: float = 1.0,
     repetition_window: int = 64,
     seed: int | None = None,
+    use_cache: bool = True,
 ) -> list[int]:
     """Autoregressively generate `max_new_tokens` ids after `prompt_ids`.
 
     Returns only the newly generated ids (not the prompt). Recurrent
-    models stream their hidden state one step at a time; models with a
-    fixed context window (`max_context` not None) are re-fed a cropped
-    window of the most recent ids on every step. Runs under
-    `torch.inference_mode()` with the model in eval mode, and restores the
-    model's previous training mode before returning.
+    models stream their hidden state one step at a time.
+
+    Models with a fixed context window (`max_context` not None, i.e.
+    transformers) use a key/value cache by default (`use_cache=True`):
+    the prompt (cropped to `block_size`) is encoded once, then each new
+    token is encoded incrementally against the cache instead of
+    re-encoding the whole window from scratch. When the cache fills
+    `block_size`, it is rebuilt from the most recent `block_size - 1`
+    tokens (see `TransformerLyricsModel.forward`). For sequences that
+    never exceed `block_size`, this produces the same logits (up to
+    floating-point tolerance) and, for identical sampling settings and
+    seed, the same generated ids as `use_cache=False`, which re-encodes
+    the whole cropped window on every step; `use_cache` has no effect on
+    recurrent models, which always stream. Runs under
+    `torch.inference_mode()` with the model in eval mode, and restores
+    the model's previous training mode before returning.
     """
     if len(prompt_ids) == 0:
         raise ValueError("prompt_ids must be non-empty")
@@ -126,28 +138,44 @@ def generate(
             all_ids = list(prompt_ids)
             generated: list[int] = []
             block_size = model.max_context
+            caching = use_cache and block_size is not None
 
-            def _run(ids: list[int], state: object) -> tuple[Tensor, object]:
-                context = torch.tensor([ids], dtype=torch.long, device=device)
-                return model(context, artist_tensor, state)
+            def _to_tensor(ids: list[int]) -> Tensor:
+                return torch.tensor([ids], dtype=torch.long, device=device)
 
-            if block_size is None:
-                logits, state = _run(all_ids, None)
-            else:
-                logits, state = _run(all_ids[-block_size:], None)
+            def _encode_full(ids: list[int]) -> tuple[Tensor, object]:
+                """Encode a window from scratch: no cache carried across calls."""
+                if block_size is None:
+                    return model(_to_tensor(ids), artist_tensor, None)
+                return model(_to_tensor(ids), artist_tensor, None, use_cache=caching)
+
+            def _encode_step(ids: list[int], state: object) -> tuple[Tensor, object]:
+                """Encode new ids incrementally against an existing state/cache."""
+                if block_size is None:
+                    return model(_to_tensor(ids), artist_tensor, state)
+                return model(_to_tensor(ids), artist_tensor, state, use_cache=True)
+
+            window = all_ids if block_size is None else all_ids[-block_size:]
+            logits, state = _encode_full(window)
 
             for _ in range(max_new_tokens):
                 next_logits = logits[0, -1, :]
-                window = all_ids[-repetition_window:] if repetition_window > 0 else []
-                next_logits = apply_repetition_penalty(next_logits, window, repetition_penalty)
+                rep_window = all_ids[-repetition_window:] if repetition_window > 0 else []
+                next_logits = apply_repetition_penalty(next_logits, rep_window, repetition_penalty)
                 next_id = sample_next(next_logits, temperature, top_k, top_p, generator)
                 generated.append(next_id)
                 all_ids.append(next_id)
 
                 if block_size is None:
-                    logits, state = _run([next_id], state)
+                    logits, state = _encode_step([next_id], state)
+                elif not caching:
+                    logits, state = _encode_full(all_ids[-block_size:])
+                elif state.length >= block_size:
+                    # Cache is full: no position left for another token, so
+                    # rebuild from the most recent block_size - 1 tokens.
+                    logits, state = _encode_full(all_ids[-(block_size - 1) :])
                 else:
-                    logits, state = _run(all_ids[-block_size:], None)
+                    logits, state = _encode_step([next_id], state)
         return generated
     finally:
         model.train(was_training)
