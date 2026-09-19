@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import logging
+import sys
 from pathlib import Path
 
 from lyricgen.checkpoint import LoadedModel, load_checkpoint
@@ -111,17 +113,20 @@ def _cmd_generate(args: argparse.Namespace) -> None:
 
 def _cmd_evaluate(args: argparse.Namespace) -> None:
     try:
-        from lyricgen import evaluate as evaluate_module
+        evaluate_module = importlib.import_module("lyricgen.evaluate")
     except ImportError as exc:
-        raise SystemExit(f"lyricgen evaluate is not available yet: {exc}") from exc
+        raise SystemExit(f"lyricgen evaluate could not be loaded: {exc}") from exc
     evaluate_module.main(args.args)
 
 
 def _cmd_demo(args: argparse.Namespace) -> None:
     try:
-        from lyricgen import app as app_module
+        app_module = importlib.import_module("lyricgen.app")
     except ImportError as exc:
-        raise SystemExit(f"lyricgen demo is not available yet: {exc}") from exc
+        raise SystemExit(
+            "lyricgen demo needs Gradio: pip install -r requirements-demo.txt "
+            f"({exc})"
+        ) from exc
     app_module.main(args.args)
 
 
@@ -179,8 +184,17 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+_DELEGATED = {"evaluate": _cmd_evaluate, "demo": _cmd_demo}
+
+
 def main(argv: list[str] | None = None) -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
+    argv = sys.argv[1:] if argv is None else list(argv)
+    # evaluate and demo own their flags; argparse.REMAINDER drops a leading
+    # "--flag" inside subparsers, so hand the rest of argv over directly.
+    if argv and argv[0] in _DELEGATED:
+        _DELEGATED[argv[0]](argparse.Namespace(args=argv[1:]))
+        return
     parser = build_parser()
     args = parser.parse_args(argv)
     args.func(args)

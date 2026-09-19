@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -168,13 +169,15 @@ def test_cli_prepare_wraps_prepare_module(tmp_path):
         artists_module.ARTISTS.update(original)
 
 
-def test_cli_evaluate_exits_clearly_when_module_missing():
-    with pytest.raises(SystemExit):
+def test_cli_evaluate_exits_clearly_when_module_missing(monkeypatch):
+    monkeypatch.setitem(sys.modules, "lyricgen.evaluate", None)
+    with pytest.raises(SystemExit, match="could not be loaded"):
         main(["evaluate", "--checkpoint", "x", "--data", "y", "--out", "z"])
 
 
-def test_cli_demo_exits_clearly_when_module_missing():
-    with pytest.raises(SystemExit):
+def test_cli_demo_exits_clearly_when_gradio_missing(monkeypatch):
+    monkeypatch.setitem(sys.modules, "lyricgen.app", None)
+    with pytest.raises(SystemExit, match="requirements-demo.txt"):
         main(["demo"])
 
 

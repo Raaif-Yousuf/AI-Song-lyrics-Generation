@@ -135,7 +135,7 @@ def train(config: ExperimentConfig) -> dict[str, Any]:
     chars_per_token_full = total_chars_full / total_tokens_full if total_tokens_full else 1.0
 
     log_path = out_dir / "log.jsonl"
-    log_entries: list[dict[str, Any]] = []
+    log_path.write_text("", encoding="utf-8")
 
     best_val_loss = math.inf
     best_step = 0
@@ -196,7 +196,8 @@ def train(config: ExperimentConfig) -> dict[str, Any]:
                 "elapsed_s": elapsed,
                 "tokens_per_sec": tokens_per_sec,
             }
-            log_entries.append(entry)
+            with log_path.open("a", encoding="utf-8") as fh:
+                fh.write(_json_line(entry))
             logger.info(
                 "step %d/%d train_loss=%.4f val_loss=%.4f val_bpc=%.4f tok/s=%.0f",
                 step_num,
@@ -225,10 +226,6 @@ def train(config: ExperimentConfig) -> dict[str, Any]:
         # the final model so a best checkpoint always exists.
         save_checkpoint(best_path, model, tokenizer, artist_vocab, config.to_dict())
         best_step = config.train.steps
-
-    with log_path.open("w", encoding="utf-8") as fh:
-        for entry in log_entries:
-            fh.write(_json_line(entry))
 
     tokenizer.save(out_dir / "tokenizer.json")
     (out_dir / "config.yaml").write_text(
