@@ -7,6 +7,7 @@ import pytest
 import torch
 from helpers import make_tiny_config
 
+from lyricgen import pretrained
 from lyricgen.checkpoint import save_checkpoint
 from lyricgen.cli import main
 from lyricgen.dataset import ArtistVocab
@@ -186,3 +187,77 @@ def _write_minimal_config(path: Path, data_dir: Path, out_dir: Path) -> None:
     import yaml
 
     path.write_text(yaml.safe_dump(config.to_dict(), sort_keys=False), encoding="utf-8")
+
+
+@pytest.fixture
+def fake_release(tmp_path, monkeypatch):
+    """Point pretrained.RELEASE_URL/cache at local dirs; no network used."""
+    release_dir = tmp_path / "release"
+    release_dir.mkdir()
+    cache_dir = tmp_path / "cache"
+    monkeypatch.setattr(pretrained, "RELEASE_URL", release_dir.as_uri() + "/")
+    monkeypatch.setenv("LYRICGEN_CACHE", str(cache_dir))
+    return release_dir, cache_dir
+
+
+def test_cli_download_single_name(fake_release):
+    release_dir, cache_dir = fake_release
+    (release_dir / "lstm.pt").write_bytes(b"fake lstm checkpoint")
+
+    main(["download", "lstm"])
+
+    assert (cache_dir / "lstm.pt").read_bytes() == b"fake lstm checkpoint"
+
+
+def test_cli_download_all(fake_release):
+    release_dir, cache_dir = fake_release
+    for name, entry in pretrained.MANIFEST.items():
+        (release_dir / entry["file"]).write_bytes(name.encode())
+
+    main(["download", "--all"])
+
+    for name, entry in pretrained.MANIFEST.items():
+        assert (cache_dir / entry["file"]).read_bytes() == name.encode()
+
+
+def test_cli_download_unknown_name_errors():
+    with pytest.raises(SystemExit, match="unknown checkpoint"):
+        main(["download", "not-a-real-name"])
+
+
+def test_cli_download_no_names_errors():
+    with pytest.raises(SystemExit, match="specify"):
+        main(["download"])
+
+
+def test_cli_generate_with_pretrained_downloads_then_generates(
+    fake_release, torch_seeded_checkpoint_bytes
+):
+    release_dir, cache_dir = fake_release
+    (release_dir / "lstm.pt").write_bytes(torch_seeded_checkpoint_bytes)
+
+    main(["generate", "--pretrained", "lstm", "--artist", "alpha", "--length", "5"])
+
+    assert (cache_dir / "lstm.pt").exists()
+
+
+@pytest.fixture
+def torch_seeded_checkpoint_bytes(tmp_path) -> bytes:
+    """Bytes of a real, tiny, loadable checkpoint (an lstm, to match the name)."""
+    torch.manual_seed(0)
+    tokenizer = CharTokenizer.train(["hello world\ngoodbye world"])
+    artist_vocab = ArtistVocab(["alpha", "beta"])
+    model = build_model(
+        {
+            "kind": "lstm",
+            "vocab_size": tokenizer.vocab_size,
+            "n_artists": len(artist_vocab),
+            "embed_dim": 4,
+            "artist_embed_dim": 2,
+            "hidden_sizes": (4, 4),
+            "dropout": 0.0,
+        }
+    )
+    path = tmp_path / "src_ckpt.pt"
+    save_checkpoint(path, model, tokenizer, artist_vocab, {})
+    return path.read_bytes()
