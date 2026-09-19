@@ -4,10 +4,10 @@ import json
 from pathlib import Path
 
 import torch
+from helpers import make_tiny_config
 
 from lyricgen.checkpoint import load_checkpoint
 from lyricgen.train import train
-from tests.conftest import make_tiny_config
 
 
 def test_train_writes_full_run_directory_layout(tiny_config, tmp_path):

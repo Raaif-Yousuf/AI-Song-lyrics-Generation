@@ -5,13 +5,13 @@ from pathlib import Path
 
 import pytest
 import torch
+from helpers import make_tiny_config
 
 from lyricgen.checkpoint import save_checkpoint
 from lyricgen.cli import main
 from lyricgen.dataset import ArtistVocab
 from lyricgen.models import build_model
 from lyricgen.tokenizers import CharTokenizer
-from tests.conftest import make_tiny_config
 
 
 @pytest.fixture
