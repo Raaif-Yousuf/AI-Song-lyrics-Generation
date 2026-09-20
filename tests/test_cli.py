@@ -197,6 +197,12 @@ def fake_release(tmp_path, monkeypatch):
     cache_dir = tmp_path / "cache"
     monkeypatch.setattr(pretrained, "RELEASE_URL", release_dir.as_uri() + "/")
     monkeypatch.setenv("LYRICGEN_CACHE", str(cache_dir))
+    # The real manifest pins the published checkpoints' hashes; the fake assets
+    # written by these tests have different contents, so drop the expectation.
+    fake_manifest = {
+        name: {**entry, "sha256": "", "size": 0} for name, entry in pretrained.MANIFEST.items()
+    }
+    monkeypatch.setattr(pretrained, "MANIFEST", fake_manifest)
     return release_dir, cache_dir
 
 
