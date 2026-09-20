@@ -16,10 +16,26 @@ RELEASE_URL = "https://github.com/Raaif-Yousuf/AI-Song-lyrics-Generation/release
 # sha256/size are placeholders until the checkpoints are published; download()
 # skips verification for an entry whose sha256 is empty.
 MANIFEST: dict[str, dict] = {
-    "lstm": {"file": "lstm.pt", "sha256": "", "size": 0},
-    "gru": {"file": "gru.pt", "sha256": "", "size": 0},
-    "transformer": {"file": "transformer.pt", "sha256": "", "size": 0},
-    "transformer_bpe": {"file": "transformer_bpe.pt", "sha256": "", "size": 0},
+    "lstm": {
+        "file": "lstm.pt",
+        "sha256": "8945fda36107435f4fcb0cb4f935489856c1b36784de64b9b75ca0deb64d31f2",
+        "size": 2374921,
+    },
+    "gru": {
+        "file": "gru.pt",
+        "sha256": "515d2b17a06eb8644792add09a643ff7e1a3a54651cd53b97898ec47b988e892",
+        "size": 1814793,
+    },
+    "transformer": {
+        "file": "transformer.pt",
+        "sha256": "ce1bfd8f2e8be4b6d0e1cc3651e4d7b700f8d275fc1b7de4812547f1608409ae",
+        "size": 13128403,
+    },
+    "transformer_bpe": {
+        "file": "transformer_bpe.pt",
+        "sha256": "a7cf80979159e7109791e4d166896c95f9fddc20a90f31449640c8349bc69c88",
+        "size": 15062867,
+    },
 }
 
 _DEFAULT_CACHE_DIR = Path.home() / ".cache" / "lyricgen"
