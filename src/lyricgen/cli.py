@@ -13,6 +13,7 @@ from lyricgen.checkpoint import LoadedModel, load_checkpoint
 from lyricgen.config import DataConfig, load_config
 from lyricgen.data.prepare import DEFAULT_MIN_STANZA_CHARS
 from lyricgen.data.prepare import prepare as run_prepare
+from lyricgen.pretrained import MANIFEST, resolve_checkpoint
 
 logger = logging.getLogger(__name__)
 
@@ -82,10 +83,27 @@ def _run_interactive(loaded: LoadedModel) -> None:
             break
 
 
+def _cmd_download(args: argparse.Namespace) -> None:
+    from lyricgen.pretrained import download as download_checkpoint
+
+    names = sorted(MANIFEST) if args.all else args.names
+    if not names:
+        raise SystemExit("lyricgen download: specify one or more NAME, or --all")
+    unknown = [name for name in names if name not in MANIFEST]
+    if unknown:
+        raise SystemExit(
+            f"lyricgen download: unknown checkpoint(s) {unknown}; "
+            f"expected one of {sorted(MANIFEST)}"
+        )
+
+    for name in names:
+        path = download_checkpoint(name, cache_dir=args.cache_dir, force=args.force)
+        logger.info("%s -> %s", name, path)
+
+
 def _cmd_generate(args: argparse.Namespace) -> None:
-    if args.checkpoint is None:
-        raise SystemExit("lyricgen generate: --checkpoint is required")
-    loaded = load_checkpoint(args.checkpoint)
+    checkpoint_path = resolve_checkpoint(args.checkpoint, args.pretrained)
+    loaded = load_checkpoint(checkpoint_path)
 
     if args.list_artists:
         for slug, display_name in loaded.artists():
@@ -155,7 +173,9 @@ def build_parser() -> argparse.ArgumentParser:
     generate_parser = subparsers.add_parser(
         "generate", help="Generate lyrics from a trained checkpoint."
     )
-    generate_parser.add_argument("--checkpoint", type=Path, default=None)
+    checkpoint_group = generate_parser.add_mutually_exclusive_group(required=True)
+    checkpoint_group.add_argument("--checkpoint", type=Path, default=None)
+    checkpoint_group.add_argument("--pretrained", choices=sorted(MANIFEST), default=None)
     generate_parser.add_argument("--artist", default=None)
     generate_parser.add_argument("--prompt", default="")
     generate_parser.add_argument("--length", type=int, default=400)
@@ -180,6 +200,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     demo_parser.add_argument("args", nargs=argparse.REMAINDER)
     demo_parser.set_defaults(func=_cmd_demo)
+
+    download_parser = subparsers.add_parser(
+        "download", help="Download pretrained checkpoints from the GitHub release."
+    )
+    download_parser.add_argument("names", nargs="*", metavar="NAME")
+    download_parser.add_argument("--all", action="store_true")
+    download_parser.add_argument("--cache-dir", type=Path, default=None)
+    download_parser.add_argument("--force", action="store_true")
+    download_parser.set_defaults(func=_cmd_download)
 
     return parser
 

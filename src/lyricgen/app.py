@@ -143,16 +143,22 @@ def build_demo(loaded: LoadedModelLike) -> gr.Blocks:
 
 def main(argv: list[str] | None = None) -> None:
     """Parse arguments, load a checkpoint and launch the demo."""
+    from lyricgen.pretrained import MANIFEST
+
     parser = argparse.ArgumentParser(description="lyricgen gradio demo")
-    parser.add_argument("--checkpoint", default="runs/transformer/best.pt")
+    checkpoint_group = parser.add_mutually_exclusive_group()
+    checkpoint_group.add_argument("--checkpoint", default="runs/transformer/best.pt")
+    checkpoint_group.add_argument("--pretrained", choices=sorted(MANIFEST), default=None)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=7860)
     parser.add_argument("--share", action="store_true", default=False)
     args = parser.parse_args(argv)
 
     from lyricgen.checkpoint import load_checkpoint
+    from lyricgen.pretrained import resolve_checkpoint
 
-    loaded = load_checkpoint(args.checkpoint)
+    checkpoint_path = resolve_checkpoint(args.checkpoint, args.pretrained)
+    loaded = load_checkpoint(checkpoint_path)
     demo = build_demo(loaded)
     demo.launch(server_name=args.host, server_port=args.port, share=args.share)
 
