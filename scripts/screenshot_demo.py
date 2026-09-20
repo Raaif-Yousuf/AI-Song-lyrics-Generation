@@ -89,7 +89,15 @@ def _wait_for_server(host: str, port: int, timeout_s: float) -> None:
     raise RuntimeError(message) from last_error
 
 
-def _capture(url: str, out_path: Path, width: int, height: int) -> None:
+def _capture(
+    url: str,
+    out_path: Path,
+    width: int,
+    height: int,
+    artist: str = "The Beatles",
+    prompt: str = "I woke up this morning",
+    generate_timeout_ms: int = 120_000,
+) -> None:
     from playwright.sync_api import sync_playwright
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -102,21 +110,23 @@ def _capture(url: str, out_path: Path, width: int, height: int) -> None:
             page.evaluate("window.scrollTo(0, 0)")
 
             page.locator("#artist-dropdown input").click()
-            page.get_by_role("option", name="Eminem").click()
+            page.get_by_role("option", name=artist, exact=True).click()
             page.keyboard.press("Escape")
 
             prompt_box = page.locator("#prompt-input textarea")
             prompt_box.click()
-            prompt_box.fill("Started from the bottom")
+            prompt_box.fill(prompt)
 
             page.locator("#generate-button").click()
             output = page.locator("#output-text textarea")
             page.wait_for_function(
-                "el => el.value.trim().length > 0", arg=output.element_handle(), timeout=15_000
+                "el => el.value.trim().length > 0",
+                arg=output.element_handle(),
+                timeout=generate_timeout_ms,
             )
             page.wait_for_timeout(500)
 
-            page.screenshot(path=str(out_path))
+            page.screenshot(path=str(out_path), full_page=True)
         finally:
             browser.close()
 
@@ -130,6 +140,9 @@ def capture_screenshot(
     width: int = 1200,
     height: int = 800,
     timeout_s: float = 20.0,
+    artist: str = "The Beatles",
+    prompt: str = "I woke up this morning",
+    generate_timeout_ms: int = 120_000,
 ) -> None:
     """Launch the demo, screenshot a generated example, and shut it down."""
     from lyricgen.app import build_demo
@@ -160,6 +173,14 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--port", type=int, default=None)
     parser.add_argument("--width", type=int, default=1200)
     parser.add_argument("--height", type=int, default=800)
+    parser.add_argument("--artist", default="The Beatles")
+    parser.add_argument("--prompt", default="I woke up this morning")
+    parser.add_argument(
+        "--generate-timeout",
+        type=int,
+        default=120_000,
+        help="How long to wait for the first generation, in milliseconds.",
+    )
     parser.add_argument("--fake", action="store_true", default=False, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
 
@@ -169,6 +190,9 @@ def main(argv: list[str] | None = None) -> None:
         fake=args.fake,
         host=args.host,
         port=args.port,
+        artist=args.artist,
+        prompt=args.prompt,
+        generate_timeout_ms=args.generate_timeout,
         width=args.width,
         height=args.height,
     )

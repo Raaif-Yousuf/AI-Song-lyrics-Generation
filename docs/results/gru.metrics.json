@@ -1,0 +1,16 @@
+{
+  "name": "gru",
+  "kind": "gru",
+  "tokenizer": {
+    "type": "char"
+  },
+  "params": 451740,
+  "steps": 1500,
+  "tokens_seen": 12288000,
+  "train_time_s": 1672.8824408000019,
+  "train_tokens_per_sec": 7345.4055708323785,
+  "best_step": 1500,
+  "val_loss": 1.5870801168802087,
+  "val_bpc": 2.2896794926646242,
+  "val_char_ppl": 4.889474750473121
+}

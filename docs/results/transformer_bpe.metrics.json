@@ -1,0 +1,17 @@
+{
+  "name": "transformer_bpe",
+  "kind": "transformer",
+  "tokenizer": {
+    "type": "bpe",
+    "vocab_size": 2000
+  },
+  "params": 3749376,
+  "steps": 1500,
+  "tokens_seen": 12288000,
+  "train_time_s": 7268.562571200004,
+  "train_tokens_per_sec": 1690.5680978366142,
+  "best_step": 1500,
+  "val_loss": 3.87486235998929,
+  "val_bpc": 1.881811177533901,
+  "val_char_ppl": 3.685374364944989
+}

@@ -1,0 +1,16 @@
+{
+  "name": "lstm",
+  "kind": "lstm",
+  "tokenizer": {
+    "type": "char"
+  },
+  "params": 591772,
+  "steps": 1500,
+  "tokens_seen": 12288000,
+  "train_time_s": 955.3249955000028,
+  "train_tokens_per_sec": 12862.638429730025,
+  "best_step": 1500,
+  "val_loss": 1.8046996605039132,
+  "val_bpc": 2.6036390722337512,
+  "val_char_ppl": 6.078178620578568
+}

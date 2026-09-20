@@ -1,0 +1,274 @@
+{
+  "split": "test",
+  "test_loss": 3.898702318595127,
+  "test_bpc": 1.8918131621434444,
+  "test_char_ppl": 3.7110132757828405,
+  "gen_chars_per_sec": 13.700777945071378,
+  "novelty": {
+    "4": 0.8613303269447576,
+    "6": 0.9715909090909091,
+    "8": 0.9894982497082847
+  },
+  "novelty_heldout": {
+    "4": 0.4205128205128205,
+    "6": 0.4623955431754875,
+    "8": 0.4954128440366973
+  },
+  "distinct_2": {
+    "samples": 0.7125867195242814,
+    "heldout": 0.9408983451536643
+  },
+  "distinct_3": {
+    "samples": 0.8710976837865055,
+    "heldout": 0.9828009828009828
+  },
+  "repeated_line_rate": {
+    "samples": 0.005555555555555556,
+    "heldout": 0.0
+  },
+  "longest_copied_run": {
+    "samples": {
+      "mean": 6.4375,
+      "max": 23
+    },
+    "heldout": {
+      "mean": 13.4375,
+      "max": 32
+    }
+  },
+  "conditioning": {
+    "true_bpc": 1.8918131621434444,
+    "any_bpc": 1.9277946855169898,
+    "wrong_bpc": 1.9704794722766996,
+    "per_artist": {
+      "michael-jackson": {
+        "true": 1.816437488644079,
+        "any": 1.8548071877152594
+      },
+      "prince": {
+        "true": 1.8628342992451308,
+        "any": 1.9125933383921674
+      },
+      "nirvana": {
+        "true": 1.879706669103094,
+        "any": 1.9174185723651047
+      },
+      "bob-dylan": {
+        "true": 1.8992504179409853,
+        "any": 1.930119664379755
+      },
+      "patti-smith": {
+        "true": 2.1902299136960988,
+        "any": 2.2371148098323173
+      },
+      "johnny-cash": {
+        "true": 1.9718192139652229,
+        "any": 1.999154231003802
+      },
+      "blink-182": {
+        "true": 1.6527456604646846,
+        "any": 1.697340945846557
+      },
+      "disney": {
+        "true": 2.0143026831636757,
+        "any": 2.03569656609948
+      },
+      "nicki-minaj": {
+        "true": 1.939552841257765,
+        "any": 1.9720625696454537
+      },
+      "r-kelly": {
+        "true": 1.7102203088700398,
+        "any": 1.7308482441628974
+      },
+      "kanye-west": {
+        "true": 2.0088216704365722,
+        "any": 2.040409765379371
+      },
+      "jimi-hendrix": {
+        "true": 1.943969392595606,
+        "any": 1.9762191244146814
+      },
+      "radiohead": {
+        "true": 1.9217501101219001,
+        "any": 1.953278928819139
+      },
+      "paul-simon": {
+        "true": 2.010094088887723,
+        "any": 2.034832018898277
+      },
+      "missy-elliott": {
+        "true": 1.919466635480723,
+        "any": 1.955906188246952
+      },
+      "janis-joplin": {
+        "true": 1.7118432894527613,
+        "any": 1.767215682009468
+      },
+      "nursery-rhymes": {
+        "true": 2.3042849143510478,
+        "any": 2.4159600217886696
+      },
+      "lil-wayne": {
+        "true": 2.0341371460567954,
+        "any": 2.070717284946876
+      },
+      "dj-khaled": {
+        "true": 1.8964396854261474,
+        "any": 1.939123068806401
+      },
+      "notorious-big": {
+        "true": 2.002713450060221,
+        "any": 2.046764366342101
+      },
+      "drake": {
+        "true": 1.8082893440051295,
+        "any": 1.8330006945880537
+      },
+      "eminem": {
+        "true": 2.0375909041668976,
+        "any": 2.067352862973803
+      },
+      "dolly-parton": {
+        "true": 1.7271299741579733,
+        "any": 1.7578763000273385
+      },
+      "leonard-cohen": {
+        "true": 1.8207897785402736,
+        "any": 1.8417594040270633
+      },
+      "taylor-swift": {
+        "true": 1.7080213910868496,
+        "any": 1.7308774950645822
+      },
+      "lady-gaga": {
+        "true": 1.7635929928277687,
+        "any": 1.7920100947274076
+      },
+      "alicia-keys": {
+        "true": 1.7090540417632984,
+        "any": 1.7255480044776652
+      },
+      "bob-marley": {
+        "true": 1.8447931948064455,
+        "any": 1.9041597708833478
+      },
+      "nickelback": {
+        "true": 1.659363058720261,
+        "any": 1.6792066781615549
+      },
+      "joni-mitchell": {
+        "true": 2.00962450151191,
+        "any": 2.0371338941992665
+      },
+      "dickinson": {
+        "true": 2.3656841150112005,
+        "any": 2.4626552048962895
+      },
+      "hamilton": {
+        "true": 1.9264076049729437,
+        "any": 1.9900176971988477
+      },
+      "rihanna": {
+        "true": 1.654362683154802,
+        "any": 1.6733243450399524
+      },
+      "al-green": {
+        "true": 1.530988260291529,
+        "any": 1.556133588180013
+      },
+      "bjork": {
+        "true": 2.324598932198179,
+        "any": 2.3974690893597
+      },
+      "ludacris": {
+        "true": 2.0228624371954216,
+        "any": 2.0546589033428604
+      },
+      "lin-manuel-miranda": {
+        "true": 1.8554170612044047,
+        "any": 1.924762416743792
+      },
+      "bruno-mars": {
+        "true": 1.689258938128717,
+        "any": 1.7217268398516445
+      },
+      "bieber": {
+        "true": 1.6185364133677953,
+        "any": 1.6376779407847872
+      },
+      "britney-spears": {
+        "true": 1.6170844475676562,
+        "any": 1.639760218752147
+      },
+      "cake": {
+        "true": 1.9395668612794572,
+        "any": 1.9583979411293813
+      },
+      "bruce-springsteen": {
+        "true": 1.7843958120218384,
+        "any": 1.806040064636103
+      },
+      "amy-winehouse": {
+        "true": 1.831488635048394,
+        "any": 1.8524833041828477
+      },
+      "lorde": {
+        "true": 1.8421222049532993,
+        "any": 1.8852934695998518
+      },
+      "beatles": {
+        "true": 1.7052912426694573,
+        "any": 1.723849291148212
+      },
+      "adele": {
+        "true": 1.5850413733773285,
+        "any": 1.6067638634979826
+      },
+      "dr-seuss": {
+        "true": 2.039106442044433,
+        "any": 2.176894426986648
+      }
+    }
+  },
+  "sampling": {
+    "temperature": 0.8,
+    "top_k": 0,
+    "top_p": 0.95,
+    "repetition_penalty": 1.0
+  },
+  "n_samples": 16,
+  "seed": 1337,
+  "samples": [
+    {
+      "artist": "adele",
+      "prompt": "A thousand miles and poles apart",
+      "text": "\nI could forget\nAnd I would never, I'm gonna show you that I'm gonna leave this\n\nOh, oh\nWhy would I'll never knew my love\n\nWhen you're not alone\n\nWe're falling\n\nTell me, you're gonna let go\nI said you"
+    },
+    {
+      "artist": "al-green",
+      "prompt": "Shall follow me Al the days of my life.",
+      "text": "\nI'm taking, I gotta do all right.\n\nI love you,\nI want you, baby, baby, baby\nI want you, baby\nI want you to want to take it\nI want you to be with you, baby\nI want to hold you\nI want you\nI want you to "
+    },
+    {
+      "artist": "alicia-keys",
+      "prompt": "I wanna tell you just how I feel",
+      "text": " like to be\nI'm not a little bit of control\nOh it's what I'm blessed\nWhat's to see\nWhen you're just thinking, if you don't care about\nYou're gonna be out of me\n\nAbout you know I'm guard you,\nToday you"
+    },
+    {
+      "artist": "amy-winehouse",
+      "prompt": "You say, \"What did you do with him today?\"",
+      "text": "\nIt was a dos you said,\nYou're the story for me to know\nThere's a friend you know what you're through\nAnd somewhere and I'm a friend to make a friend and I'm a friend to asking if you're my friend\n\nI "
+    },
+    {
+      "artist": "bjork",
+      "prompt": "Crawling in silence",
+      "text": "\nUnderneath the bendand\nAnd a seas are beautiful in the day\nI remember you someday\n\nIn my life (You are the a man)\n\nYou are with a little man\nYou are my love, you\nYou are a brand new man\n\nI feel so\nYo"
+    },
+    {
+      "artist": "blink-182",
+      "prompt": "There's some room to move on, to move on, to move on",
+      "text": " to the jing of the Greatoritney\n\nOh, I need you\nI need you\nNow I ain't talking to go out\nI won't you, but I'm gonna go, you, I'm gonna go back to the same\n\nYou're gonna go get you up, get better\nSo, "
+    }
+  ]
+}
