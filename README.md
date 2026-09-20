@@ -7,14 +7,6 @@ the training text it copies back.
 
 ![the local demo generating Beatles-style lyrics](docs/assets/demo.png)
 
-The same prompt at three temperatures, from the BPE transformer (`--artist beatles --prompt "I woke up this morning"`):
-
-```
-0.5  And I'm gonna trust my love / And I'm gonna make you feel it all right / And I'm gonna be alright
-0.8  And my my heart / And when the lights has come back / Where the lights go home / We're going home
-1.1  The world their eyes dishes lights will build all perfect / all my tended to take a millors
-```
-
 ## How it works
 
 - The lyric files are not in the tree. `scripts/fetch_data.py` restores them from this repo's history, then
@@ -50,11 +42,14 @@ lyricgen generate --pretrained transformer_bpe --artist beatles --prompt "I woke
 lyricgen demo --pretrained transformer_bpe            # local web UI, needs requirements-demo.txt
 ```
 
+The same four sampling controls work from the CLI. [Here is a session](docs/screenshots/generate-session.png)
+switching artist and changing temperature, top-k, top-p and the repetition penalty on one prompt.
+
 To train from scratch: `python scripts/fetch_data.py && lyricgen prepare`, then
 `lyricgen train --config configs/transformer_bpe.yaml`. The four checkpoints above are attached to the
 [v0.2.0 release](https://github.com/Raaif-Yousuf/AI-Song-lyrics-Generation/releases/tag/v0.2.0).
 
-`pytest -q` runs 196 tests (data cleaning, tokenizers, every model, sampling, training, evaluation) and they
+`pytest -q` runs 220 tests (data cleaning, tokenizers, every model, sampling, training, evaluation) and they
 run on every pull request.
 
 The lyrics themselves are copyrighted and are not redistributed here. Code is MIT licensed.
