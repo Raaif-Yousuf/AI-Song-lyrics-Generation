@@ -1,12 +1,10 @@
-# Baseline architecture (mirrors the original project's LSTM 256 -> LSTM 128
-# stack); uses the model's built-in defaults for that shape.
+# Baseline: the original project's LSTM 256 -> LSTM 128 stack, now artist-conditioned.
 #
-# Shares data split, seed, batch size, block size and training-token budget
-# with gru.yaml, transformer.yaml and transformer_bpe.yaml so the four runs
-# are a fair comparison: steps * batch_size * block_size = 2048 * 64 * 256
-# ~= 33.6M tokens, targeting ~10-15 minutes on a 16-thread CPU assuming
-# 30-60k tokens/sec for the transformer (RNNs may run slower at the same
-# step count; that is expected and fine for the comparison).
+# Shared budget for the architecture comparison (lstm, gru, transformer,
+# transformer_bpe): same split, seed, batch size, block size and number of
+# training tokens (1500 steps * 32 * 256 = 12.3M tokens). Learning rates are
+# common defaults per architecture, not tuned. The four runs were trained at
+# the same time on one 16-thread laptop CPU with 4 threads each.
 name: lstm
 data:
   dir: data/processed
@@ -15,17 +13,17 @@ tokenizer:
 model:
   kind: lstm
 train:
-  steps: 2048
-  batch_size: 64
+  steps: 1500
+  batch_size: 32
   block_size: 256
-  lr: 0.0003
+  lr: 0.002
   weight_decay: 0.01
   warmup_steps: 100
   grad_clip: 1.0
-  eval_interval: 256
-  eval_batches: 20
+  eval_interval: 150
+  eval_batches: 40
   artist_dropout: 0.1
   seed: 1337
   device: cpu
-  num_threads: 16
+  num_threads: 4
 out_dir: runs/lstm

@@ -1,0 +1,100 @@
+{
+  "checkpoint": "runs/transformer/best.pt",
+  "split": "test",
+  "n_samples": 12,
+  "sample_chars": 250,
+  "seed": 1337,
+  "results": [
+    {
+      "setting": {
+        "temperature": 0.5,
+        "top_k": 0,
+        "top_p": 1.0,
+        "repetition_penalty": 1.0
+      },
+      "novelty_6": 0.9968354430379747,
+      "distinct_2": 0.7401459854014598,
+      "repeated_line_rate": 0.0,
+      "longest_copied_run_mean": 4.666666666666667,
+      "gen_chars_per_sec": 78.25308440401493
+    },
+    {
+      "setting": {
+        "temperature": 0.8,
+        "top_k": 0,
+        "top_p": 1.0,
+        "repetition_penalty": 1.0
+      },
+      "novelty_6": 0.9966555183946488,
+      "distinct_2": 0.8828967642526965,
+      "repeated_line_rate": 0.0,
+      "longest_copied_run_mean": 4.25,
+      "gen_chars_per_sec": 78.3429414944819
+    },
+    {
+      "setting": {
+        "temperature": 1.0,
+        "top_k": 0,
+        "top_p": 1.0,
+        "repetition_penalty": 1.0
+      },
+      "novelty_6": 1.0,
+      "distinct_2": 0.9589490968801314,
+      "repeated_line_rate": 0.0,
+      "longest_copied_run_mean": 3.5,
+      "gen_chars_per_sec": 2.6027891118352815
+    },
+    {
+      "setting": {
+        "temperature": 1.2,
+        "top_k": 0,
+        "top_p": 1.0,
+        "repetition_penalty": 1.0
+      },
+      "novelty_6": 1.0,
+      "distinct_2": 0.972318339100346,
+      "repeated_line_rate": 0.0,
+      "longest_copied_run_mean": 3.1666666666666665,
+      "gen_chars_per_sec": 3.0508366655251056
+    },
+    {
+      "setting": {
+        "temperature": 0.8,
+        "top_k": 0,
+        "top_p": 0.9,
+        "repetition_penalty": 1.0
+      },
+      "novelty_6": 0.996661101836394,
+      "distinct_2": 0.8662613981762918,
+      "repeated_line_rate": 0.0,
+      "longest_copied_run_mean": 5.083333333333333,
+      "gen_chars_per_sec": 2.944645671975925
+    },
+    {
+      "setting": {
+        "temperature": 0.8,
+        "top_k": 20,
+        "top_p": 1.0,
+        "repetition_penalty": 1.0
+      },
+      "novelty_6": 0.995049504950495,
+      "distinct_2": 0.900611620795107,
+      "repeated_line_rate": 0.0,
+      "longest_copied_run_mean": 4.166666666666667,
+      "gen_chars_per_sec": 95.23561004218163
+    },
+    {
+      "setting": {
+        "temperature": 0.8,
+        "top_k": 0,
+        "top_p": 1.0,
+        "repetition_penalty": 1.2
+      },
+      "novelty_6": 1.0,
+      "distinct_2": 0.9443535188216039,
+      "repeated_line_rate": 0.0,
+      "longest_copied_run_mean": 3.75,
+      "gen_chars_per_sec": 204.9691028549511
+    }
+  ]
+}

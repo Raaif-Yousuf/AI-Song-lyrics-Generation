@@ -1,0 +1,16 @@
+{
+  "name": "transformer",
+  "kind": "transformer",
+  "tokenizer": {
+    "type": "char"
+  },
+  "params": 3277312,
+  "steps": 1500,
+  "tokens_seen": 12288000,
+  "train_time_s": 6324.907519200002,
+  "train_tokens_per_sec": 1942.795204941468,
+  "best_step": 1500,
+  "val_loss": 1.4985495844544772,
+  "val_bpc": 2.161956548867466,
+  "val_char_ppl": 4.475213617495077
+}

@@ -1,60 +1,60 @@
-# AI Song Lyrics Generator
+# lyricgen
 
-This project generates song lyrics using an LSTM (Long Short-Term Memory) neural network. It is trained on a dataset of lyrics from various artists, and users can select an artist or use the entire dataset to generate new lyrics. The model allows for customization of the generation process through parameters like temperature and sequence length.
+This started as a Keras LSTM that wrote song lyrics one character at a time. I rebuilt it in PyTorch to find
+out how much of the quality came from the model and how much from the data, so it now trains four
+architectures on the same split, lets you pick the artist to write in the style of, and measures how much of
+the training text it copies back.
 
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Dataset](#dataset)
-- [Acknowledgements](#acknowledgements)
+![the local demo generating Beatles-style lyrics](docs/assets/demo.png)
 
-## Overview
-This project uses TensorFlow and Keras to build and train an LSTM model for text generation. The model is trained on a dataset of song lyrics, and users can generate new lyrics by selecting an artist or using the entire dataset. The generated text can be controlled using a "temperature" parameter, which adjusts the randomness of the output.
+The same prompt at three temperatures, from the BPE transformer (`--artist beatles --prompt "I woke up this morning"`):
 
-## Features
-- **Artist Selection**: Choose from a list of artists or use the entire dataset.
-- **Customizable Generation**: Control the randomness of the generated text using temperature.
-- **LSTM Model**: Uses a deep learning model to learn patterns in the lyrics and generate new text.
-- **User-Friendly Interface**: Simple command-line interface for selecting options and generating lyrics.
+```
+0.5  And I'm gonna trust my love / And I'm gonna make you feel it all right / And I'm gonna be alright
+0.8  And my my heart / And when the lights has come back / Where the lights go home / We're going home
+1.1  The world their eyes dishes lights will build all perfect / all my tended to take a millors
+```
 
-## Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Ra-Verse/AI-Song-lyrics-Generation/tree/main
-   cd lyrics-generation-lstm
-   ```
-2. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Ensure you have TensorFlow installed:
-   ```bash
-   pip install tensorflow
-   ```
+## How it works
 
-## Usage
-1. Prepare the dataset by placing your lyrics file in the project directory.
-2. Run the script to train the model and generate lyrics:
-   ```bash
-   python train.py
-   ```
-3. Use the generated model to produce new lyrics:
-   ```bash
-   python generate.py
-   ```
-4. Adjust parameters like temperature to modify randomness:
-   ```bash
-   python generate.py --temperature 0.8
-   ```
+- The lyric files are not in the tree. `scripts/fetch_data.py` restores them from this repo's history, then
+  `lyricgen prepare` cleans them, drops duplicate stanzas and makes a per-artist train/validation/test split.
+- A model reads the text as characters (or 2000 BPE tokens) plus an artist embedding, and predicts the next
+  token. Dropping the artist 10% of the time also teaches it an "any artist" mode.
+- Generation supports temperature, top-k, top-p and a repetition penalty, with a key/value cache that made
+  the transformer about twice as fast at sampling.
+- `lyricgen evaluate` reports bits per character on the test split and checks memorization: how many of the
+  generated word n-grams never appear in the training text, with real held-out lyrics as the reference.
 
-## Dataset
-The dataset consists of song lyrics from various artists. You can modify the dataset by adding or removing text files containing lyrics.
+## Results
 
-## Acknowledgements
-This project was originally a **guided project for poetry generation**, but I **modified it extensively** to improve its **functionality, performance, and usability**.
+Same data, same seed, same 12.3M training tokens, trained on a laptop CPU.
 
-## License
-This project is open-source and available under the MIT License.
+| model | params | test bits/char | test char perplexity | novel 6-grams |
+| --- | --- | --- | --- | --- |
+| LSTM 256 to 128 (the original) | 0.59M | 2.608 | 6.10 | 1.000 |
+| GRU 256 to 128 | 0.45M | 2.295 | 4.91 | 1.000 |
+| transformer, characters | 3.28M | 2.168 | 4.49 | 0.998 |
+| transformer, BPE | 3.75M | 1.892 | 3.71 | 0.972 |
 
+Real held-out lyrics score 0.462 on that last column, so the models are inventing rather than replaying, and
+the better ones copy more. Full numbers, training curves and the artist-conditioning check are in
+[docs/experiments.md](docs/experiments.md).
+
+## Run it
+
+```bash
+pip install -r requirements.txt && pip install -e .
+lyricgen download transformer_bpe                     # or train your own, below
+lyricgen generate --pretrained transformer_bpe --artist beatles --prompt "I woke up this morning"
+lyricgen demo --pretrained transformer_bpe            # local web UI, needs requirements-demo.txt
+```
+
+To train from scratch: `python scripts/fetch_data.py && lyricgen prepare`, then
+`lyricgen train --config configs/transformer_bpe.yaml`. The four checkpoints above are attached to the
+[v0.2.0 release](https://github.com/Raaif-Yousuf/AI-Song-lyrics-Generation/releases/tag/v0.2.0).
+
+`pytest -q` runs 196 tests (data cleaning, tokenizers, every model, sampling, training, evaluation) and they
+run on every pull request.
+
+The lyrics themselves are copyrighted and are not redistributed here. Code is MIT licensed.
