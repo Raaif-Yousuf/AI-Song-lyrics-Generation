@@ -5,15 +5,7 @@ out how much of the quality came from the model and how much from the data, so i
 architectures on the same split, lets you pick the artist to write in the style of, and measures how much of
 the training text it copies back.
 
-![the local demo generating Beatles-style lyrics](docs/assets/demo.png)
-
-The same prompt at three temperatures, from the BPE transformer (`--artist beatles --prompt "I woke up this morning"`):
-
-```
-0.5  And I'm gonna trust my love / And I'm gonna make you feel it all right / And I'm gonna be alright
-0.8  And my my heart / And when the lights has come back / Where the lights go home / We're going home
-1.1  The world their eyes dishes lights will build all perfect / all my tended to take a millors
-```
+![a terminal session generating Beatles and Nirvana style lyrics with different sampling settings](docs/screenshots/generate-session.png)
 
 ## How it works
 
@@ -54,7 +46,7 @@ To train from scratch: `python scripts/fetch_data.py && lyricgen prepare`, then
 `lyricgen train --config configs/transformer_bpe.yaml`. The four checkpoints above are attached to the
 [v0.2.0 release](https://github.com/Raaif-Yousuf/AI-Song-lyrics-Generation/releases/tag/v0.2.0).
 
-`pytest -q` runs 196 tests (data cleaning, tokenizers, every model, sampling, training, evaluation) and they
+`pytest -q` runs 220 tests (data cleaning, tokenizers, every model, sampling, training, evaluation) and they
 run on every pull request.
 
 The lyrics themselves are copyrighted and are not redistributed here. Code is MIT licensed.
